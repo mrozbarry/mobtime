@@ -74,6 +74,9 @@ export const goal = props =>
             'text-gray-500': props.id === null,
             "truncate": props.truncate,
           },
+          style: {
+            wordBreak: 'break-all',
+          },
         },
         props.text,
       ),
