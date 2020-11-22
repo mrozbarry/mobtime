@@ -35,9 +35,7 @@ export const mobber = props =>
                 'font-extrabold': props.position !== 'mob',
                 'leading-none': true,
                 'mb-1': true,
-              },
-              style: {
-                'word-break': 'break-all',
+                'break-all': true,
               },
             },
             props.position,
@@ -51,9 +49,7 @@ export const mobber = props =>
                 'font-bold': props.position !== 'mob',
                 'leading-none': true,
                 "truncate": props.truncate,
-              },
-              style: {
-                wordBreak: 'break-all',
+                'break-all': true,
               },
             },
             props.name || 'Empty',
