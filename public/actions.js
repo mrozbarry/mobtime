@@ -49,6 +49,7 @@ export const Init = (_, timerId) => ({
     mobOrder: 'Navigator,Driver',
     duration: 5 * 60 * 1000,
   },
+  initialLoadingComplete: false,
   expandedReorderable: null,
   timerTab: 'overview',
   drag: { ...emptyDrag },
@@ -304,6 +305,11 @@ export const RenameUserPrompt = (state, { id }) => {
 export const UpdateName = (state, name) => ({
   ...state,
   name,
+});
+
+export const CompleteInitialLoading = state => ({
+  ...state,
+  initialLoadingComplete: true,
 });
 
 export const ShuffleMob = state => {
@@ -797,10 +803,19 @@ export const UpdateByWebsocketData = (
       ];
 
     case 'timer:ownership':
-      return {
-        ...state,
-        isOwner: data.isOwner,
-      };
+      return [
+        {
+          ...state,
+          isOwner: data.isOwner,
+        },
+        data.isOwner
+          ? [
+              effects.andThen({
+                action: CompleteInitialLoading,
+              }),
+            ]
+          : [],
+      ];
 
     default:
       console.warn('Unknown websocket data', payload); // eslint-disable-line no-console

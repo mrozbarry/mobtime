@@ -242,7 +242,7 @@ test('does not start timer if timer is not running when recieving client:new fro
 
 test('can update ownership from websocket message', t => {
   const isOwner = false;
-  const state = actions.UpdateByWebsocketData(
+  const [state] = actions.UpdateByWebsocketData(
     {},
     {
       payload: {
@@ -254,9 +254,61 @@ test('can update ownership from websocket message', t => {
     },
   );
 
-  t.deepEqual(state, {
+  t.like(state, {
     isOwner,
   });
+});
+
+test('completes initial loading when becoming the timer owner', t => {
+  const [state, effect] = actions.UpdateByWebsocketData(
+    {},
+    {
+      payload: {
+        type: 'timer:ownership',
+        isOwner: true,
+      },
+      documentElement: {},
+      Notification: {},
+    },
+  );
+
+  t.deepEqual(effect, [
+    effects.andThen({
+      action: actions.CompleteInitialLoading,
+    }),
+  ]);
+});
+
+test('initial loading is not changed to true when losing timer ownership', t => {
+  const [state, effect] = actions.UpdateByWebsocketData(
+    {},
+    {
+      payload: {
+        type: 'timer:ownership',
+        isOwner: false,
+      },
+      documentElement: {},
+      Notification: {},
+    },
+  );
+
+  t.deepEqual(effect, []);
+});
+
+test('initial loading is not changed to false when losing timer ownership', t => {
+  const [state, effect] = actions.UpdateByWebsocketData(
+    {},
+    {
+      payload: {
+        type: 'timer:ownership',
+        isOwner: false,
+      },
+      documentElement: {},
+      Notification: {},
+    },
+  );
+
+  t.deepEqual(effect, []);
 });
 
 test('does nothing from unknown type from websocket message', t => {
