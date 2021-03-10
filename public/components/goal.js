@@ -73,6 +73,7 @@ export const goal = props =>
             'leading-tight': true,
             'text-gray-500': props.id === null,
             "truncate": props.truncate,
+            'break-all': true,
           },
         },
         props.text,
