@@ -1,4 +1,5 @@
 /* eslint-disable import/no-absolute-path, import/extensions, import/no-unresolved */
+import { roundToSeconds } from './lib/roundToSeconds.js';
 
 const TimerFX = (dispatch, { timerStartedAt, timerDuration, actions }) => {
   let cancel = false;
@@ -14,27 +15,23 @@ const TimerFX = (dispatch, { timerStartedAt, timerDuration, actions }) => {
 
     const currentTime = Date.now();
     dispatch(actions.SetCurrentTime, {
-      currentTime,
+      currentTime: roundToSeconds(currentTime),
       documentElement: document,
     });
-    const elapsed = currentTime - timerStartedAt;
+    const elapsed = roundToSeconds(currentTime) - timerStartedAt;
 
-    if (elapsed >= timerDuration) {
-      cleanup();
+    if (timerStartedAt !== null && elapsed >= timerDuration) {
       dispatch(actions.Completed, {
         isEndOfTurn: true,
         documentElement: document,
         Notification: window.Notification,
       });
-      return;
     }
 
     handle = setTimeout(tick, 100);
   };
 
-  if (timerStartedAt) {
-    handle = setTimeout(tick, 0);
-  }
+  handle = setTimeout(tick, 0);
 
   return cleanup;
 };

@@ -43,11 +43,14 @@ export const Init = (_, timerId) => ({
   isOwner: false,
   timerStartedAt: null,
   timerDuration: 0,
+  breakTimerStartedAt: null,
   mob: [],
   goals: [],
   settings: {
     mobOrder: 'Navigator,Driver',
     duration: 5 * 60 * 1000,
+    breaksEnabled: false,
+    breakCadence: 45 * 60 * 1000,
   },
   expandedReorderable: null,
   timerTab: 'overview',
@@ -567,8 +570,30 @@ export const UpdateGoalText = (state, goal) => [
   },
 ];
 
-export const PauseTimer = (state, currentTime = Date.now()) => {
-  const elapsed = currentTime - state.timerStartedAt;
+export const StartBreakTimer = state => {
+  if (!state.settings.breaksEnabled) return [{ ...state }];
+  if (state.breakTimerStartedAt !== null) return [{ ...state }];
+  return [
+    {
+      ...state,
+      breakTimerStartedAt: state.currentTime,
+    },
+    effects.StartBreakTimer({
+      websocket: state.websocket,
+    }),
+  ];
+};
+
+export const FinishBreak = state => [
+  {
+    ...state,
+    breakTimerStartedAt: null,
+  },
+  effects.FinishBreak({ websocket: state.websocket }),
+];
+
+export const PauseTimer = state => {
+  const elapsed = state.currentTime - state.timerStartedAt;
   const timerDuration = Math.max(0, state.timerDuration - elapsed);
 
   return [
@@ -576,7 +601,6 @@ export const PauseTimer = (state, currentTime = Date.now()) => {
       ...state,
       timerStartedAt: null,
       timerDuration,
-      currentTime,
     },
     effects.PauseTimer({
       websocket: state.websocket,
@@ -585,11 +609,10 @@ export const PauseTimer = (state, currentTime = Date.now()) => {
   ];
 };
 
-export const ResumeTimer = (state, timerStartedAt = Date.now()) => [
+export const ResumeTimer = state => [
   {
     ...state,
-    timerStartedAt,
-    currentTime: timerStartedAt,
+    timerStartedAt: state.currentTime,
   },
   effects.StartTimer({
     websocket: state.websocket,
@@ -604,10 +627,15 @@ export const StartTimer = (state, { timerStartedAt, timerDuration }) => [
     currentTime: timerStartedAt,
     timerDuration,
   },
-  effects.StartTimer({
-    websocket: state.websocket,
-    timerDuration,
-  }),
+  [
+    effects.StartTimer({
+      websocket: state.websocket,
+      timerDuration,
+    }),
+    effects.andThen({
+      action: StartBreakTimer,
+    }),
+  ],
 ];
 
 export const SetAllowNotification = (
@@ -762,6 +790,18 @@ export const UpdateByWebsocketData = (
           },
         }),
       ];
+
+    case 'break:start-timer':
+      return {
+        ...state,
+        breakTimerStartedAt: state.currentTime,
+      };
+
+    case 'break:finish':
+      return {
+        ...state,
+        breakTimerStartedAt: null,
+      };
 
     case 'goals:update':
       return {

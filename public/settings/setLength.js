@@ -5,15 +5,10 @@ import { base } from '/settings/base.js';
 
 import * as actions from '/actions.js';
 
-const isNumber = value => Number(value) == value; // eslint-disable-line eqeqeq
+import { toMinutes } from '/lib/toMinutes.js';
+import { toSeconds } from '/lib/toSeconds.js';
 
-const toMinutes = value =>
-  isNumber(value) ? parseInt(value / 60000, 10) : value;
-
-const toSeconds = value => (isNumber(value) ? value * 60000 : value);
-
-const value = (key, { pendingSettings, settings }) =>
-  key in pendingSettings ? pendingSettings[key] : settings[key];
+import { getSettings } from '/settings/getSettings.js';
 
 export const setLength = props =>
   h(
@@ -26,7 +21,7 @@ export const setLength = props =>
         name: 'setLength',
         maxlength: 2,
         pattern: '[1-9][0-9]?',
-        value: toMinutes(value('duration', props)),
+        value: toMinutes(getSettings('duration', props)),
         oninput: [
           actions.PendingSettingsSet,
           e => ({

@@ -12,12 +12,14 @@ import { addGoal } from '/sections/addGoal.js';
 import { addParticipant } from '/sections/addParticipant.js';
 import { goalList } from '/sections/goalList.js';
 import { header } from '/sections/header.js';
+import { nextBreak } from '/sections/nextBreak.js';
 import { mobActions } from '/sections/mobActions.js';
 import { mobParticipants } from '/sections/mobParticipants.js';
 import { qrShare } from '/sections/qrShare.js';
 import { timeRemaining } from '/sections/timeRemaining.js';
 import { mobOrder } from '/settings/mobOrder.js';
 import { setLength } from '/settings/setLength.js';
+import { breaks } from './settings/breaks.js';
 import * as subscriptions from '/subscriptions.js';
 import { app, h } from '/vendor/hyperapp.js';
 import { removeCompletedGoals } from './sections/removeCompletedGoals.js';
@@ -206,6 +208,30 @@ app({
                 mobOrder: state.settings.mobOrder,
               }),
 
+              ...(state.settings.breaksEnabled
+                ? [
+                    h(
+                      overviewHeading,
+                      {
+                        rightAction: h(
+                          button,
+                          {
+                            type: 'button',
+                            onclick: [actions.SetTimerTab, 'timer-settings'],
+                          },
+                          'Edit Break',
+                        ),
+                      },
+                      'Next break',
+                    ),
+                    h(nextBreak, {
+                      breakTimerStartedAt: state.breakTimerStartedAt,
+                      currentTime: state.currentTime,
+                      breakCadence: state.settings.breakCadence,
+                    }),
+                  ]
+                : []),
+
               h(
                 overviewHeading,
                 {
@@ -264,6 +290,10 @@ app({
                 },
                 [
                   h(setLength, {
+                    pendingSettings: state.pendingSettings,
+                    settings: state.settings,
+                  }),
+                  h(breaks, {
                     pendingSettings: state.pendingSettings,
                     settings: state.settings,
                   }),
