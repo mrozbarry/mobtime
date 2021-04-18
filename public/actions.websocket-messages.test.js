@@ -123,6 +123,33 @@ test('can complete timer from websocket message', t => {
   );
 });
 
+test('can complete a paused timer from websocket message', t => {
+  const initialState = {
+    timerStartedAt: null,
+    timerDuration: 5000,
+  };
+
+  const state = actions.UpdateByWebsocketData(initialState, {
+    payload: {
+      type: 'timer:complete',
+    },
+    documentElement: {},
+    Notification: {},
+  });
+
+  t.is(state[0], initialState);
+  t.deepEqual(
+    state[1],
+    effects.andThen({
+      action: actions.EndTurn,
+      props: {
+        documentElement: {},
+        Notification: {},
+      },
+    }),
+  );
+});
+
 test('can skip complete timer from websocket message if timer already over', t => {
   const initialState = {
     timerStartedAt: null,

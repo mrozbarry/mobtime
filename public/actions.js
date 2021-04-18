@@ -748,7 +748,7 @@ export const UpdateByWebsocketData = (
       };
 
     case 'timer:complete':
-      if (state.timerStartedAt === null) {
+      if (state.timerDuration === 0) {
         return state;
       }
 
